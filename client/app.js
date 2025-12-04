@@ -1,3 +1,6 @@
+const BASE_URL = `${window.location.protocol}//${window.location.hostname}:3000`;
+const WS_URL = `ws://${window.location.hostname}:8080`;
+
 class CollabBoardApp {
     constructor() {
         console.log('App initializing...');
@@ -165,7 +168,7 @@ class CollabBoardApp {
     async verifyTokenAndAutoLogin() {
         console.log('Verifying token...');
         try {
-            const response = await fetch('http://localhost:3000/api/verify-token', {
+            const response = await fetch(`${BASE_URL}/api/verify-token`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${this.jwtToken}`,
@@ -253,7 +256,7 @@ class CollabBoardApp {
         try {
             this.showLoading();
             
-            const response = await fetch('http://localhost:3000/api/login', {
+            const response = await fetch(`${BASE_URL}/api/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -318,7 +321,7 @@ class CollabBoardApp {
         try {
             this.showLoading();
             
-            const response = await fetch('http://localhost:3000/api/register', {
+            const response = await fetch(`${BASE_URL}/api/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -355,7 +358,7 @@ class CollabBoardApp {
         console.log('Logging out...');
         
         if (this.jwtToken) {
-            fetch('http://localhost:3000/api/logout', {
+            fetch(`${BASE_URL}/api/logout`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${this.jwtToken}`,
@@ -567,7 +570,7 @@ class CollabBoardApp {
 
     async showProfile() {
         try {
-            const response = await fetch('http://localhost:3000/api/profile', {
+            const response = await fetch(`${BASE_URL}/api/profile`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${this.jwtToken}`,
@@ -621,7 +624,7 @@ class CollabBoardApp {
         try {
             this.showLoading();
             
-            const response = await fetch('http://localhost:3000/api/profile', {
+            const response = await fetch(`${BASE_URL}/api/profile`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${this.jwtToken}`,
@@ -701,7 +704,7 @@ class CollabBoardApp {
         try {
             this.showLoading();
             
-            const response = await fetch('http://localhost:3000/api/change-password', {
+            const response = await fetch(`${BASE_URL}/api/change-password`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${this.jwtToken}`,
@@ -733,7 +736,7 @@ class CollabBoardApp {
     connectWebSocket(isReconnect = false) {
         console.log('Connecting WebSocket, reconnect:', isReconnect);
         
-        this.ws = new WebSocket('ws://localhost:8080');
+        this.ws = new WebSocket(WS_URL);
 
         this.ws.onopen = () => {
             console.log('WebSocket connected');
@@ -1350,7 +1353,7 @@ class CollabBoardApp {
         return new Promise((resolve, reject) => {
             reader.onload = async (e) => {
                 try {
-                    const response = await fetch('http://localhost:3000/api/upload-preview', {
+                    const response = await fetch(`${BASE_URL}/api/upload-preview`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1672,9 +1675,9 @@ updatePreviewStatus(previewId, status = 'success') {
                 <small class="message-time">${data.timestamp}</small>
             </div>
             <div class="image-container">
-                <a href="http://localhost:3000${data.imageUrl}" target="_blank" class="image-link">
+                <a href="${BASE_URL}${data.imageUrl}" target="_blank" class="image-link">
                     <div class="image-wrapper" style="padding-bottom: ${Math.min(aspectRatio, 100)}%">
-                        <img src="http://localhost:3000${data.thumbnailUrl || data.imageUrl}" 
+                        <img src="${BASE_URL}${data.thumbnailUrl || data.imageUrl}" 
                              alt="${this.escapeHtml(data.filename)}" 
                              class="chat-image"
                              loading="lazy">
@@ -1706,7 +1709,7 @@ updatePreviewStatus(previewId, status = 'success') {
 
     downloadFile(fileUrl, filename) {
         const link = document.createElement('a');
-        link.href = `http://localhost:3000${fileUrl}`;
+        link.href = `${BASE_URL}${fileUrl}`;
         link.download = filename;
         link.target = '_blank';
         document.body.appendChild(link);

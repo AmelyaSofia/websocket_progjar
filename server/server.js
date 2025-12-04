@@ -23,12 +23,21 @@ const http = require('http');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 
+const os = require('os');
+
 const app = express();
 
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: true,
     credentials: true
 }));
+
+// app.use(cors({
+//     origin: (origin, callback) => {
+//         callback(null, true); // terima semua origin LAN
+//     },
+//     credentials: true
+// }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
@@ -471,11 +480,14 @@ app.post('/api/cleanup-preview', async (req, res) => {
     }
 });
 
-httpServer.listen(3000, () => {
-    console.log("HTTP server running at http://localhost:3000");
+httpServer.listen(3000, "0.0.0.0", () => {
+    console.log("HTTP server running...");
 });
 
-const wss = new WebSocket.Server({ port: 8080 });
+const wss = new WebSocket.Server({
+    port: 8080,
+    host: '0.0.0.0'
+});
 const clients = new Map();
 let db;
 
@@ -1375,12 +1387,38 @@ setInterval(() => {
     }
 }, 30 * 60 * 1000);
 
+function getLocalIP() {
+    const interfaces = os.networkInterfaces();
+    let wifiIP = null;
+    let ethernetIP = null;
+
+    for (const name in interfaces) {
+        for (const iface of interfaces[name]) {
+
+            if (iface.family !== 'IPv4' || iface.internal) continue;
+
+            if (name.toLowerCase().includes('wi-fi') || name.toLowerCase().includes('wifi')) {
+                return iface.address;
+            }
+
+            if (name.toLowerCase().includes('ethernet') && !name.toLowerCase().includes('vEthernet')) {
+                ethernetIP = iface.address;
+            }
+        }
+    }
+
+    if (ethernetIP) return ethernetIP;
+
+    return 'localhost';
+}
+
 console.log('Note: Install dependencies with: npm install bcrypt jsonwebtoken cookie-parser cors sharp');
 
 initializeDB().then(success => {
     if (success) {
+        const ip = getLocalIP();
         console.log('Server ready for real-time collaboration!');
-        console.log(`HTTP Server: http://localhost:3000`);
-        console.log(`WebSocket Server: ws://localhost:8080`);
+        console.log(`HTTP Server: http://${ip}:3000`);
+        console.log(`WebSocket Server: ws://${ip}:8080`);
     }
 });
